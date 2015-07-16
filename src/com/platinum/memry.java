@@ -2,7 +2,10 @@ package com.platinum;
 
 import processing.core.PApplet;
 import processing.core.PFont;
+import processing.core.PGraphics;
 import processing.core.PImage;
+import processing.opengl.PShader;
+
 
 
 
@@ -16,18 +19,20 @@ import com.platinum.graphics.Boat;
 import com.platinum.graphics.Button;
 import com.platinum.graphics.Colour;
 import com.platinum.graphics.Display;
+import com.platinum.graphics.Scene;
 import com.platinum.graphics.Viking;
 import com.platinum.graphics.Wave;
 import com.platinum.graphics.Window;
 import com.platinum.sounds.Sound;
+import com.platinum.gameplay.Loading;
 
 
 public class memry extends PApplet{
 	private static final long serialVersionUID = 1l;
-	private int count, pattern[][], charSpace, chars[] = {8592, 8593, 8594, 8595}, lives = 5, keyPress, patternOld[], speed, boatProg, boatSpeed, keySet[] = {37, 38, 39, 40};
+	private int count, pattern[][], charSpace, chars[] = {8592, 8593, 8594, 8595}, lives = 5, keyPress, patternOld[], speed, boatProg, boatSpeed, keySet[] = {37, 38, 39, 40}, settingUp = 0;
 	private SecureRandom rand = new SecureRandom();
-	Display disp = new Display(1366, 700);
-	public Button playButton, menuButton;
+	public Display disp = new Display(1366, 700);
+	public Button playButton, menuButton, redPlay, greenSettings, blueBack;
 	
 	public Button settingsButton, initPlayButton;
 	private Button playMore = new Button(0.1f, 0.8f, 0, .1f, .07f, new Colour(255, 255, 255), "Again", "Again");
@@ -38,11 +43,15 @@ public class memry extends PApplet{
 	private boolean failed, once, twice, readCopy, show[][], keyLock, thrice, frice, again, hasGot, hasGot1, won, keyBinding, menuOnce = true;
 	public static PFont f = new PFont();
 	private Sound drums[] = new Sound[4], fail, win;
-	private PImage boat;
+	private PImage boat, loadi;
 	
 	private Boat boot;
 	private Viking viking;
 	private Wave wave[] = new Wave[6];
+	private Scene introScene;
+	private PShader blur2;
+	private PGraphics loading;
+	
 	
 
 
@@ -55,21 +64,68 @@ public class memry extends PApplet{
 	public static void main(String args[]){
 		PApplet.main(new String[] {com.platinum.memry.class.getName()});
 	}
+//	public boolean sketchFullScreen() {
+//		  return true;
+//		}
 	
+
 	
 	public void setup(){
 		
 		disp.size(this);
+
+		if(frame != null){
+			frame.setResizable(true);
+		}
+		frameRate(60);
+		f = new PFont();
+		f = createFont("GNU Unifont", 128, true);
+		loadi = loadImage("res/spritty.png");
+		loading = createGraphics((int) Display.res.x, (int) Display.res.y, P2D);
+		loading.beginDraw();
+		loading.background(122);
+		loading.image(loadi, (int) ((Display.res.x/2) - (loadi.width/2)), (int) ((Display.res.y/2) - (loadi.height/2)));
+		loading.textFont(f, 32);
+		loading.textAlign(CENTER, CENTER);
+		loading.fill(0);
+		loading.text("A", Display.res.x/2, Display.res.y/4);
+		loading.text("Production", Display.res.x/2, 3* Display.res.y/4);
+		loading.noFill();
+		loading.endDraw();
+		
+		
+		
+		
+	}
+	
+	  
+	  
+	public void doSetup(){
+		
+		
+
+		blur2 = loadShader("res/blur.glsl");
+
+
 		viking = new Viking(.08f, .73f, .25f, this);
+		
 		boot = new Boat(.05f, .65f, 0.2f, this);
+
 		mainWindow = new Window(.35f, .45f, 1, .3f, .1f, new Colour(255, 255, 255), this);
 		progress = new Window(.2f,.8f, 1, .6f, .05f, new Colour(255,255,255), this);
 		settingsButton = new Button(0.8f, 0.1f, .2f, "res/settings.png", "res/settings.png", this);
-		initPlayButton = new Button(0.8f, 0.1f, .2f, "res/initBut.png", "res/initBut.png", this);
-		initPlayButton.blur(.5f);
+		initPlayButton = new Button(0.5f, 0.5f, .5f, "res/initBut.png", "res/initBut.png", this);
+		initPlayButton.pos.x = initPlayButton.pos.x - (initPlayButton.butto.width/2);
+		initPlayButton.pos.y = initPlayButton.pos.y - (initPlayButton.butto.height/2);
 		menuButton = new Button(0.8f, 0.1f, .2f, "res/initBut.png", "res/initBut.png", this);
 		playButton = new Button(0.5f, 0.7f, .5f, "res/initBut.png", "res/initBut.png", this);
+		redPlay = new Button(.2f, .1f, Display.ratio.x * 1.5f, "res/redPlay.png", "res/redPlay.png", this);
+		blueBack = new Button(0.8f, 0.1f, Display.ratio.x, "res/blueBack.png", "res/blueBack.png", this);
+		greenSettings = new Button(.7f, .1f, Display.ratio.x * 1.5f, "res/greenSettings.png", "res/greenSettings.png", this);
+		System.out.println("intro scene");
+		introScene = new Scene(this);
 		count = 1;
+		System.out.println("drums");
 		drums[0] = new Sound("/res/crash.wav");
 		drums[1] = new Sound("/res/kick.wav");
 		drums[2] = new Sound("/res/snare.wav");
@@ -93,8 +149,7 @@ public class memry extends PApplet{
 
         
 		menuButton.State = true;
-		f = new PFont();
-		f = createFont("GNU Unifont", 128, true);
+		
 		charSpace = (int) (Display.res.y * 0.2f);
 		cursors[0] = new Button(0.1f, 0.3f, 1, .05f, .04f, new Colour(0, 0, 255), "UP", "UP");
 		cursors[1] = new Button(0.1f, 0.7f, 1, .05f, .04f, new Colour(0, 255, 0), "DOWN", "DOWN");
@@ -113,13 +168,22 @@ public class memry extends PApplet{
 		again = true;
 		failed = false;
 		speed = 4;
-		this.background(255);
-		frameRate(60);
 		
 	}
 	
 	public void draw(){
+		if(settingUp == 1){
+			doSetup();
+			settingUp++;
+			return;			
+		}
 		
+		else if(settingUp == 0){
+			this.background(122);
+			image(loading,0, 0);
+			settingUp++;
+			return;
+		}
 				
 		if(settingsButton.State){
 			settings();
@@ -148,12 +212,25 @@ public class memry extends PApplet{
 	}
 	
 	private void menu(){
-		if(menuOnce){
-			this.background(0);
+		this.background(255);
+		
+		if(menuOnce){			
+			this.introScene.drawSceneBlur();
 			initPlayButton.drawButtonImg();
+			this.textFont(f, 32);
+			this.fill(0);
+			text(frameRate, 100, 100);
+			this.noFill();
 			return;
 		}
 		
+		this.introScene.drawScene();
+		this.textFont(f, 32);
+		this.fill(0);
+		text(frameRate, 100, 100);
+		this.noFill();
+		redPlay.drawButtonImg();
+		greenSettings.drawButtonImg();
 		
 		
 	}
@@ -691,7 +768,7 @@ public class memry extends PApplet{
 	
 	private void settings(){
 		this.background(100);
-		settingsButton.drawButtonImg();
+		blueBack.drawButtonImg();
 		for(int i = 0; i < 5; i++){
 			keyBinders[i].drawButton(this);
 		}
@@ -732,6 +809,19 @@ public class memry extends PApplet{
 		if(this.mouseX > settingsButton.pos.x && this.mouseY > settingsButton.pos.y && this.mouseX < settingsButton.pos.x + settingsButton.size.x && this.mouseY < settingsButton.pos.y + settingsButton.size.y){
 			settingsButton.change = true;
 			System.out.println("settings ubtton");
+		}
+		if(menuButton.State){
+			if(menuOnce)
+				if(this.mouseX > initPlayButton.pos.x && this.mouseY > initPlayButton.pos.y && this.mouseX < initPlayButton.pos.x + initPlayButton.size.x && this.mouseY < initPlayButton.pos.y + initPlayButton.size.y){
+					initPlayButton.change = true;				
+				}
+			if(this.mouseX > redPlay.pos.x && this.mouseY > redPlay.pos.y && this.mouseX < redPlay.pos.x + redPlay.size.x && this.mouseY < redPlay.pos.y + redPlay.size.y){
+				redPlay.change = true;
+			}
+			if(this.mouseX > greenSettings.pos.x && this.mouseY > greenSettings.pos.y && this.mouseX < greenSettings.pos.x + greenSettings.size.x && this.mouseY < greenSettings.pos.y + greenSettings.size.y){
+				greenSettings.change = true;
+			}
+			
 		}
 		
 		if(!settingsButton.State && !failed){
@@ -779,6 +869,9 @@ public class memry extends PApplet{
 			if(this.mouseX > keyBinders[4].pos.x && this.mouseY > keyBinders[4].pos.y && this.mouseX < keyBinders[4].pos.x + keyBinders[4].size.x && this.mouseY < keyBinders[4].pos.y + keyBinders[4].size.y){
 				keyBinders[4].change = true;
 			}
+			if(this.mouseX > blueBack.pos.x && this.mouseY > blueBack.pos.y && this.mouseX < blueBack.pos.x + blueBack.size.x && this.mouseY < blueBack.pos.y + blueBack.size.y){
+				blueBack.change = true;
+			}
 			
 		}		
 	}
@@ -793,7 +886,24 @@ public class memry extends PApplet{
 		if(playMore.change){
 			playMore.State = false;		
 		}
-		
+		if(initPlayButton.change){
+			menuOnce = false;
+		}
+		if(redPlay.change){
+			falsify();
+			playButton.State = true;
+			redPlay.change = false;
+		}
+		if(greenSettings.change){
+			falsify();
+			settingsButton.State = true;
+			greenSettings.change = false;
+		}
+		if(blueBack.change){
+			falsify();
+			menuButton.State = true;
+			blueBack.change = false;
+		}
 		if(exit.change){
 			exit.State = false;
 		}
@@ -830,6 +940,12 @@ public class memry extends PApplet{
 		thrice = true;
 		
 		
+	}
+	
+	private void falsify(){
+		settingsButton.State = false;
+		playButton.State = false;
+		menuButton.State = false;
 	}
 	
 	

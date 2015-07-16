@@ -24,7 +24,7 @@ public class Button {
 	public boolean changeState;
 	private Colour c;
 	private String s[] = new String[2];
-	private PGraphics butto;
+	public PGraphics butto;
 	private PImage imgUp, imgDown;
 	private float scale;
 	private PApplet that;
