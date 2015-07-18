@@ -14,13 +14,14 @@ public class Boat {
 	public PVector pos = new PVector(0, 0);
 	public PVector offset = new PVector(0, 0);
 	private PGraphics pgboat;
+	public PVector size;
 	private PApplet that;
 	private float scale;
 	
 	
-	public Boat(float xPos, float yPos, float scale, PApplet g){
+	public Boat(float xPos, float yPos, float scale, String img, PApplet g){
 		this.that = g;
-		boat = that.loadImage("res/boat.png");
+		boat = that.loadImage(img);
 		
 		this.pos.x = xPos * Display.res.x;
 		this.pos.y = yPos * Display.res.y;
@@ -33,7 +34,8 @@ public class Boat {
 		pgboat.scale(scale);
 		pgboat.image(boat, 0, 0);
 		pgboat.endDraw();
-				
+		
+		this.size = new PVector(pgboat.width, pgboat.height);
 		
 	}
 	

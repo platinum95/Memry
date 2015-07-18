@@ -1,7 +1,6 @@
 package com.platinum.sounds;
 
 import java.io.BufferedInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 
@@ -14,7 +13,6 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 public class Sound {
 	
 	private Clip clip;
-	private File soundFile;
 	private AudioInputStream sound;
 	
 	public Sound(String fileName){

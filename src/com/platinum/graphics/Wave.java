@@ -1,22 +1,20 @@
 package com.platinum.graphics;
 
+import java.security.SecureRandom;
+
 import com.platinum.memry;
 
 import processing.core.PApplet;
 import processing.core.PImage;
 import processing.core.PVector;
 import processing.core.PGraphics;
-import processing.opengl.PGraphicsOpenGL;
 import processing.opengl.PShader;
-import processing.opengl.Texture;
-
 
 public class Wave {
 	private PShader blur2;
 	public PVector pos;
 	public PVector offset, moveOffset;
 	private PImage wave = new PImage();
-	private Texture wave2;
 	private float scale, speed;
 	private PApplet g;
 	private Colour Tint;
@@ -24,7 +22,8 @@ public class Wave {
 	private boolean isTint;
 	public boolean move = false, forw;
 	public PGraphics pg, pgBlur;
-	private int count;
+	private int count, syncInt = 0;
+	private SecureRandom rand = new SecureRandom();
 	
 	
 	
@@ -41,7 +40,7 @@ public class Wave {
 		this.isTint = true;
 		this.waveMulti = multi;
 		pg = g.createGraphics((int) (Display.res.x +( this.wave.width * this.scale * 0.4f)), this.wave.height, memry.P2D);
-		
+		this.syncInt = rand.nextInt(180);
 		
 		pg.beginDraw();
 		pg.scale(this.scale);
@@ -71,7 +70,7 @@ public Wave(float xPos, float yPos, float scale, float sp, int multi, PApplet g,
 		this.offset = new PVector(0, 0);
 		this.moveOffset = new PVector(0, 0);
 		this.wave = g.loadImage("res/waves.png");
-		
+		this.syncInt = rand.nextInt(180);
 		this.Tint = tint;
 		this.isTint = true;
 		this.waveMulti = multi;
@@ -124,7 +123,7 @@ public Wave(float xPos, float yPos, float scale, float sp, int multi, PApplet g,
 		this.waveMulti = multi;
 		this.moveOffset = new PVector(0, 0);
 		pg = g.createGraphics((int) (Display.res.x + ( this.wave.width * this.scale * 0.4f) ), this.wave.height, memry.P2D);
-		
+		syncInt = rand.nextInt(180);
 		pg.beginDraw();
 		pg.scale(this.scale);
 		pg.image(this.wave, 0, 0);	
@@ -155,15 +154,17 @@ public Wave(float xPos, float yPos, float scale, float sp, int multi, PApplet g,
 		}
 		g.image(pg, offset.x, offset.y);
 		
+		
+		if(move){
+			if(forw){
+				g.image(pg, offset.x - pg.width, offset.y);
+			}
+			if(!forw){
+				g.image(pg, offset.x + pg.width, offset.y);
+			}
+		}
 		g.noTint();
 		g.popMatrix();
-		
-		if(forw){
-			g.image(pg, offset.x - pg.width, offset.y);
-		}
-		if(!forw){
-			g.image(pg, offset.x + pg.width, offset.y);
-		}
 			
 			
 			
@@ -184,21 +185,22 @@ public Wave(float xPos, float yPos, float scale, float sp, int multi, PApplet g,
 		}
 		g.image(pgBlur, offset.x, offset.y);
 		
+		
+		if(move){
+			if(forw){
+				g.image(pgBlur, offset.x - pg.width, offset.y);
+			}
+			if(!forw){
+				g.image(pgBlur, offset.x + pg.width, offset.y);
+			}
+		}
+			
 		g.noTint();
 		g.popMatrix();
-		
-		if(forw){
-			g.image(pgBlur, offset.x - pg.width, offset.y);
-		}
-		if(!forw){
-			g.image(pgBlur, offset.x + pg.width, offset.y);
-		}
-			
-			
 			
 			
 				
-		//}
+		
 		
 	}
 	public void update(){
@@ -218,10 +220,10 @@ public Wave(float xPos, float yPos, float scale, float sp, int multi, PApplet g,
 		
 		if(degrees >= 0){
 			if(!move)
-				offset.x = (float) (this.waveMulti *  Math.cos(Math.toRadians(speed * (degrees -180))));
+				offset.x = (float) (this.waveMulti *  Math.cos(Math.toRadians(speed * (degrees - syncInt))));
 			else
-				offset.x = (float) (this.waveMulti * 3 * Math.cos(Math.toRadians(speed * (degrees - 180))));
-			 offset.y =  (float) (this.waveMulti * Math.sin(Math.toRadians(speed * (degrees -180))));
+				offset.x = (float) (this.waveMulti * 3 * Math.cos(Math.toRadians(speed * (degrees - syncInt))));
+			 offset.y =  (float) (this.waveMulti * Math.sin(Math.toRadians(speed * (degrees - syncInt))));
 			
 		}
 		//else if(degrees > 180 && degrees < 360){
@@ -231,8 +233,8 @@ public Wave(float xPos, float yPos, float scale, float sp, int multi, PApplet g,
 			
 		//}
 		degrees++;
-		if(degrees > (int) (360 * this.speed))
-		//	degrees = 0;
+		//if(degrees == (int) (360))
+		//	degrees =  1;
 		return;
 		
 	}

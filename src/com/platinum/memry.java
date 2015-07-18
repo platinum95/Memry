@@ -12,8 +12,8 @@ import processing.opengl.PShader;
 
 
 
+
 import java.security.SecureRandom;
-import java.util.Random;
 
 import com.platinum.graphics.Boat;
 import com.platinum.graphics.Button;
@@ -24,12 +24,11 @@ import com.platinum.graphics.Viking;
 import com.platinum.graphics.Wave;
 import com.platinum.graphics.Window;
 import com.platinum.sounds.Sound;
-import com.platinum.gameplay.Loading;
 
 
 public class memry extends PApplet{
 	private static final long serialVersionUID = 1l;
-	private int count, pattern[][], charSpace, chars[] = {8592, 8593, 8594, 8595}, lives = 5, keyPress, patternOld[], speed, boatProg, boatSpeed, keySet[] = {37, 38, 39, 40}, settingUp = 0;
+	private int count, pattern[][], charSpace, chars[] = {8592, 8593, 8594, 8595}, lives = 5, patternOld[], speed, boatProg, boatSpeed, keySet[] = {37, 38, 39, 40}, settingUp = 0;
 	private SecureRandom rand = new SecureRandom();
 	public Display disp = new Display(1366, 700);
 	public Button playButton, menuButton, redPlay, greenSettings, blueBack;
@@ -40,7 +39,7 @@ public class memry extends PApplet{
 	public Button[] cursors = new Button[4], keyBinders = new Button[5];
 	public Window mainWindow;
 	public Window progress;
-	private boolean failed, once, twice, readCopy, show[][], keyLock, thrice, frice, again, hasGot, hasGot1, won, keyBinding, menuOnce = true;
+	private boolean failed, once, twice, readCopy, show[][], keyLock, thrice, frice, won, keyBinding, menuOnce = true;
 	public static PFont f = new PFont();
 	private Sound drums[] = new Sound[4], fail, win;
 	private PImage boat, loadi;
@@ -49,7 +48,6 @@ public class memry extends PApplet{
 	private Viking viking;
 	private Wave wave[] = new Wave[6];
 	private Scene introScene;
-	private PShader blur2;
 	private PGraphics loading;
 	
 	
@@ -102,16 +100,14 @@ public class memry extends PApplet{
 	  
 	public void doSetup(){
 		
-		
-
-		blur2 = loadShader("res/blur.glsl");
-
 
 		viking = new Viking(.08f, .73f, .25f, this);
 		
-		boot = new Boat(.05f, .65f, 0.2f, this);
+		boot = new Boat(.05f, .65f, 0.2f, "res/boat.png", this);
 
-		mainWindow = new Window(.35f, .45f, 1, .3f, .1f, new Colour(255, 255, 255), this);
+		mainWindow = new Window(0f, 0f, 1, .3f, .1f, new Colour(255, 255, 255), this);
+		mainWindow.pos.x = (Display.res.x/2) - mainWindow.size.x/2;
+		mainWindow.pos.y = 0 - mainWindow.size.y;
 		progress = new Window(.2f,.8f, 1, .6f, .05f, new Colour(255,255,255), this);
 		settingsButton = new Button(0.8f, 0.1f, .2f, "res/settings.png", "res/settings.png", this);
 		initPlayButton = new Button(0.5f, 0.5f, .5f, "res/initBut.png", "res/initBut.png", this);
@@ -143,8 +139,10 @@ public class memry extends PApplet{
 //			wave[i].move = true;
 //			wave[i].forw = true;
 //		}
+		
 	    viking.mainPos.x = boot.pos.x + 10;
 	    viking.mainPos.y = boot.pos.y + 60;
+	    
 	     
 
         
@@ -164,10 +162,10 @@ public class memry extends PApplet{
 		twice = true;
 		thrice = true;
 		frice = true;
-		hasGot1 = true;
-		again = true;
+
 		failed = false;
 		speed = 4;
+		
 		
 	}
 	
@@ -191,7 +189,7 @@ public class memry extends PApplet{
 		
 		else if (playButton.State){
 		 
-			playTest();
+			playTest2();
 		}
 		else if (menuButton.State){
 			 
@@ -211,10 +209,44 @@ public class memry extends PApplet{
 		
 	}
 	
+	
+	private void playTest2(){
+		this.background(255);
+		
+		if(this.introScene.boat.pos.x < Display.res.x/2){
+			this.introScene.boat.pos.x += 3;
+			this.introScene.evilBoat.pos.x = (this.introScene.boat.pos.x - Display.res.x/4 - this.introScene.boat.size.x);
+			this.fill(0);
+			text(frameRate, 100, 100);
+			this.noFill();
+			if(mainWindow.pos.y < 0.35f * Display.res.y){
+				mainWindow.pos.y += 3;
+			}
+			this.introScene.drawScene();
+			this.mainWindow.drawWindow();
+			return;
+		}
+		
+		
+		
+		
+		if(this.introScene.boat.pos.x >= Display.res.x/2 && this.introScene.waves[0].move == false){
+			for(int i = 0; i < 5; i++){
+				this.introScene.waves[i].move = true;
+				this.introScene.waves[i].forw = false;
+			}
+		}
+		
+		
+		this.introScene.drawScene();
+		this.mainWindow.drawWindow();
+		
+	}
 	private void menu(){
 		this.background(255);
 		
-		if(menuOnce){			
+		if(menuOnce){		
+			
 			this.introScene.drawSceneBlur();
 			initPlayButton.drawButtonImg();
 			this.textFont(f, 32);
@@ -344,8 +376,7 @@ public class memry extends PApplet{
 
 				
 				if(pattern[j][1] < mainWindow.pos.x + mainWindow.size.x && pattern[j][1] >= mainWindow.pos.x ){
-					if(hasGot1)
-						hasGot = false;
+
 					fill(0);
 					if(!show[j][0])
 						text("___", pattern[j][1], mainWindow.pos.y + (mainWindow.size.y/2));
@@ -559,8 +590,7 @@ public class memry extends PApplet{
 				//	show[j] = true;
 				//}
 				if(pattern[j][1] < mainWindow.pos.x + mainWindow.size.x && pattern[j][1] >= mainWindow.pos.x ){
-					if(hasGot1)
-						hasGot = false;
+
 					fill(0);
 					if(!show[j][0])
 						text("___", pattern[j][1], mainWindow.pos.y + (mainWindow.size.y/2));
@@ -927,9 +957,8 @@ public class memry extends PApplet{
 	}
 	
 	@Override
-	public void keyPressed(){
-		if(!keyLock)			
-			keyPress = this.keyCode - 37;
+	public void keyPressed(){		
+			
 		keyLock = true;
 		
 	}
