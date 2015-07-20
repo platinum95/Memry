@@ -26,6 +26,7 @@ public class Colour {
 		this.R = r;
 		this.G = g;
 		this.B = b;
+		this.A = 255;
 	}
 	public Colour(int r, int g, int b, int a){
 		this.R = r;
@@ -35,10 +36,12 @@ public class Colour {
 	}
 	public Colour(int grey){
 		this.R = this.G = this.B = grey;
+		this.A = 255;
 	}
 	public Colour(int grey, int a){
 		this.R = this.G = this.B = grey;
 		this.A = a;
 	}
+	
 	
 }

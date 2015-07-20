@@ -10,23 +10,31 @@ import processing.opengl.PShader;
 
 public class Scene {
 	
-	private PImage treeImg, backImg, skyImg, arrow;
+	private PImage treeImg, backImg, skyImg, arrowImg;
 	private PShader blur2;
 	private PGraphics tree, sky, skyBlur, backgroundSrc, backgroundBlur;
-	public PGraphics  up, down, left, right;
+	public Window mainWindow;
+	public PGraphics  arrow[] = new PGraphics[4];
 	private PApplet that;
 	public Wave waves[] = new Wave[6];
 	private PVector backgroundOffset, backMove;
 	private Viking viki;
 	public Boat boat, evilBoat;
+	public boolean showWindow = false;
+	private boolean once = true;
+	private int j = 0;
 	
 	
 	public Scene(PApplet g){
 		this.that = g;
 		blur2 = that.loadShader("res/blur.glsl");
 		
+		mainWindow = new Window(0f, 0f, 1, .3f, .1f, new Colour(255, 255, 255, 0), that);
+		mainWindow.pos.x = (Display.res.x/2) - mainWindow.size.x/2;
+		mainWindow.pos.y = 0 - mainWindow.size.y;
+		
 		skyImg = that.loadImage("res/sky.png");
-		this.arrow = that.loadImage("res/arrow.png");
+		this.arrowImg = that.loadImage("res/arrow.png");
 		System.out.println("making waves");
 		for(int i = 0; i < 5; i++){
 			waves[i] = new Wave(0f,(float) (.8f - i*.1f),(float) (.6 - .1*i),(float) (3 - i*.5f), 20 - i*6, that, new Colour(255 - i* 20), 20);
@@ -43,10 +51,10 @@ public class Scene {
 		boat.pos.y = this.waves[2].pos.y - 40;
 		boat.pos.x =- boat.size.x;
 		
-		up = makeArrow(Colour.red, 0);
-		down = makeArrow(Colour.red, 180);
-		left = makeArrow(Colour.red, 270);
-		right = makeArrow(Colour.red, 90);
+		arrow[1] = makeArrow(Colour.blue, 0);
+		arrow[3] = makeArrow(Colour.yellow, 180);
+		arrow[0] = makeArrow(Colour.green, 270);
+		arrow[2] = makeArrow(Colour.red, 90);
 		
 		System.out.println("offsets");
 		backgroundOffset = new PVector(0, 0);
@@ -71,10 +79,16 @@ public class Scene {
 		
 		backgroundSrc.beginDraw();
 		backgroundSrc.image(backImg, 0, sky.height - 20, backgroundSrc.width, (backImg.height * Display.ratio.y) - 100);
+		backgroundSrc.stroke(0);
 		backgroundSrc.image(tree, 40, 150);
 		backgroundSrc.image(tree, 200, 200);
 		backgroundSrc.image(tree, 700, 100);
 		backgroundSrc.image(tree, 1500, 200);
+		backgroundSrc.tint(0, 0);
+		backgroundSrc.fill(0, 100);
+		//backgroundSrc.rect(Display.res.x/2, Display.res.y/2, this.mainWindow.size.x, this.mainWindow.size.y);
+		backgroundSrc.noStroke();
+		backgroundSrc.noTint();
 		backgroundSrc.endDraw();
 		backgroundBlur = blurise(backgroundSrc);
 		backMove = new PVector(0, 0);
@@ -86,14 +100,14 @@ public class Scene {
 	
 	private PGraphics makeArrow(Colour tint, int rotation){
 		PGraphics output;
-		output = that.createGraphics((int) (arrow.width * 0.3f),(int) (arrow.height * 0.3f), memry.P2D);
+		output = that.createGraphics((int) (arrowImg.width * 0.3f),(int) (arrowImg.height * 0.3f), memry.P2D);
 		
 		output.beginDraw();
 		output.pushMatrix();
 		output.translate(output.width/2, output.height/2);
 		output.rotate((float) (rotation*(2*Math.PI)/360));
-		output.image(arrow, -output.width/2, -output.height/2, output.width, output.height);
 		output.tint(tint.R, tint.G, tint.B, tint.A);
+		output.image(arrowImg, -output.width/2, -output.height/2, output.width, output.height);		
 		output.popMatrix();
 		output.endDraw();
 		return output;		
@@ -113,10 +127,32 @@ public class Scene {
 	}
 	
 	public void drawScene(){
-
+		
+//		that.background(124);
 		updateScene();
 		
+		
+		this.mainWindow.drawWindow();
+		
+			
+			
 	}
+	
+	public void drawArrow(int pos, int type, boolean show){
+		if(pos > this.mainWindow.pos.x && pos <= this.mainWindow.pos.x + this.mainWindow.size.x - this.arrow[type].width){
+			if(show){	
+				that.image(arrow[type], pos, this.mainWindow.pos.y );
+			}
+			else if(!show){
+				that.textFont(memry.f, 64);
+				that.fill(0);
+				that.text("___", pos, this.mainWindow.pos.y);
+				that.noFill();
+			}
+		}
+		
+	}
+	
 	
 	public void updateScene(){
 		
@@ -166,6 +202,8 @@ public class Scene {
 		for(int i = 2; i >=0; i--){
 			this.waves[i].drawWave();
 		}
+		
+		
 		
 		
 	}

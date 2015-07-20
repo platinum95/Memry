@@ -13,8 +13,10 @@ import processing.opengl.PShader;
 
 
 
+
 import java.security.SecureRandom;
 
+import com.platinum.gameplay.Level;
 import com.platinum.graphics.Boat;
 import com.platinum.graphics.Button;
 import com.platinum.graphics.Colour;
@@ -28,11 +30,11 @@ import com.platinum.sounds.Sound;
 
 public class memry extends PApplet{
 	private static final long serialVersionUID = 1l;
-	private int count, pattern[][], charSpace, chars[] = {8592, 8593, 8594, 8595}, lives = 5, patternOld[], speed, boatProg, boatSpeed, keySet[] = {37, 38, 39, 40}, settingUp = 0;
+	private int count, score, pattern[][], charSpace, chars[] = {8592, 8593, 8594, 8595}, lives = 5, patternOld[], speed, boatProg, boatSpeed, keySet[] = {37, 38, 39, 40}, settingUp = 0;
 	private SecureRandom rand = new SecureRandom();
 	public Display disp = new Display(1366, 700);
 	public Button playButton, menuButton, redPlay, greenSettings, blueBack;
-	
+	public Level currentGame;
 	public Button settingsButton, initPlayButton;
 	private Button playMore = new Button(0.1f, 0.8f, 0, .1f, .07f, new Colour(255, 255, 255), "Again", "Again");
 	private Button exit = new Button(0.8f, 0.8f, 0, .1f, .07f, new Colour(255, 255, 255), "Exit", "Exit");
@@ -209,26 +211,28 @@ public class memry extends PApplet{
 		
 	}
 	
-	
-	private void playTest2(){
-		this.background(255);
-		
-		if(this.introScene.boat.pos.x < Display.res.x/2){
+	private void sceneSetup(){
 			this.introScene.boat.pos.x += 3;
 			this.introScene.evilBoat.pos.x = (this.introScene.boat.pos.x - Display.res.x/4 - this.introScene.boat.size.x);
 			this.fill(0);
 			text(frameRate, 100, 100);
 			this.noFill();
-			if(mainWindow.pos.y < 0.35f * Display.res.y){
-				mainWindow.pos.y += 3;
-			}
 			this.introScene.drawScene();
-			this.mainWindow.drawWindow();
-			return;
+			if(this.introScene.mainWindow.pos.y < 0.35f * Display.res.y){
+				this.introScene.mainWindow.pos.y += 3;
 		}
+			else
+				this.introScene.showWindow = true;
+	}
+	
+	private void playTest2(){
+		this.background(255);
 		
-		
-		
+		if(this.introScene.boat.pos.x < Display.res.x/2){
+			sceneSetup();
+			return;				
+			}
+				
 		
 		if(this.introScene.boat.pos.x >= Display.res.x/2 && this.introScene.waves[0].move == false){
 			for(int i = 0; i < 5; i++){
@@ -237,11 +241,179 @@ public class memry extends PApplet{
 			}
 		}
 		
-		
 		this.introScene.drawScene();
-		this.mainWindow.drawWindow();
+		playGame();
+		
+		this.fill(0);
+		this.textFont(f, 32);
+		text(frameRate, 100, 100);
+		this.noFill();
+		this.introScene.boat.offset.x = currentGame.score;
+		
+		//this.mainWindow.drawWindow();
 		
 	}
+	private void playGame(){
+		if(frice){
+			pattern = new int[count][3];
+			patternOld = new int[count];
+			for(int i = 0; i < count; i++){
+				pattern[i][0] = rand.nextInt(4);
+				pattern[i][1] = (int) (mainWindow.pos.x + mainWindow.size.x + (i * charSpace));
+				patternOld[i] = pattern[i][0];
+				
+			}
+		}
+		
+		if(!failed && !won){
+					
+					
+					
+					if(once && !frice){
+						
+						
+						if(twice){
+							
+							pattern = new int[count][3];
+							show = new boolean[count][2];
+							pattern[count - 1][0] = rand.nextInt(4);
+							
+						}
+						
+						for(int i = 0; i < count; i++){
+							if(twice && i < count - 1)
+								pattern[i][0] = patternOld[i];
+							pattern[i][1] = (int) (mainWindow.pos.x + mainWindow.size.x + (i * charSpace));
+						}
+						if(twice){
+							patternOld = new int[count];
+							for(int j = 0; j < count; j++){
+								patternOld[j] = pattern[j][0];
+							}
+						}
+						once = false;	
+						twice = false;
+					}
+					else if(frice)
+						frice = false;
+					
+					
+					
+					
+					for(int j = 0; j < count && !readCopy; j++){
+						textFont(f, 32);
+						text("READ!", Display.res.x/2, .7f * Display.res.y);
+						
+						
+						introScene.drawArrow(pattern[j][1], pattern[j][0], true);
+						
+						if(pattern[j][1] == mainWindow.pos.x + (mainWindow.size.x/2))
+							drums[pattern[j][0]].play();
+						
+						pattern[j][1] = pattern[j][1] - speed;
+					}
+					
+					for(int j = 0; j < count && readCopy; j++){
+						textFont(f, 32);
+						textAlign(CENTER, CENTER);
+						text("COPY!", Display.res.x/2, .7f * Display.res.y);
+		
+						
+						if(pattern[j][1] < mainWindow.pos.x + mainWindow.size.x && pattern[j][1] >= mainWindow.pos.x ){
+		
+							
+							introScene.drawArrow(pattern[j][1], pattern[j][0], show[j][0]);
+	
+							
+							
+		
+							if(pattern[j][1] < (int) (Display.res.x/2 - 15) && !show[j][0]){
+								
+								score--;
+								show[j][0] = true;
+								show[j][1] = false;
+							}
+							
+							
+						}
+						
+						
+						
+						pattern[j][1] = pattern[j][1]- speed;
+						
+						
+					}
+					
+					if(this.keyPressed){
+						//System.out.println(thrice);
+						if(readCopy && keyLock && thrice){
+							
+							for(int j = 0; j < count; j++){
+							//	System.out.println(this.keyCode - 37 + " " + pattern[j][0]);
+								if(pattern[j][1] > Display.res.x/2 - 15 && pattern[j][1] < Display.res.x/2 + 15){
+									if(this.keyCode == keySet[pattern[j][0]] ){
+										show[j][0] = true;
+										show[j][1] = true;
+										drums[pattern[j][0]].play();
+										if(boatSpeed != 1){
+											if (boatSpeed - 1 < 1)
+												boatSpeed = 1;
+											else if(boatSpeed - 1 >= 1)
+												boatSpeed = boatSpeed - 1;
+										}
+									}
+										
+										
+									else if(this.keyCode != keySet[pattern[j][0]] ){
+										lives--;
+										show[j][0] = true;
+										show[j][1] = false;
+										if(boatSpeed != 30){
+											if(boatSpeed + 1 > 30)
+												boatSpeed = 30;
+											else if(boatSpeed + 1 <= 30)
+												boatSpeed = boatSpeed + 1;
+										}
+								}
+			
+								}
+								thrice = false;
+							}
+							
+						}
+					
+					}
+					
+					if(pattern[count - 1][1] <= mainWindow.pos.x){
+						
+						if(readCopy){
+							count++;
+							twice = true;
+						}
+						
+						once = true;
+						
+						readCopy = !readCopy;
+					}
+					
+					if(lives <= 0){
+						failed = true;
+						once = true;
+					}
+					if(boatProg + 30 > progress.pos.x + progress.size.x){
+						won = true;
+						once = true;
+						
+					}
+					
+					
+					textFont(f, 16);
+								
+					
+					
+				}
+	}
+	
 	private void menu(){
 		this.background(255);
 		
@@ -294,10 +466,7 @@ public class memry extends PApplet{
 		wave[1].drawWave();
 		wave[0].drawWave();
 		
-		this.fill(0);
-		this.textFont(f, 32);
-		text(frameRate, 100, 100);
-		this.noFill();
+		
 		
 		textAlign(CENTER, CENTER);
 		this.textFont(f, 64);
@@ -923,6 +1092,7 @@ public class memry extends PApplet{
 			falsify();
 			playButton.State = true;
 			redPlay.change = false;
+			currentGame = new Level(10, 10, 10);
 		}
 		if(greenSettings.change){
 			falsify();
