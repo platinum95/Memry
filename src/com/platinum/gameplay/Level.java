@@ -1,25 +1,45 @@
 package com.platinum.gameplay;
 
-import com.platinum.memry;
-import com.platinum.graphics.Land;
+public class Level {
+	
+	private int length, diff, money, pos, offsetX;
+	
+	public Level(int leng, int dif){
+		this.length = leng;
+		this.diff = dif;
+	}
+	
+	public void setMoney(int mon){
+		this.money = mon;
+	}
+	
+	public void setPos(int po){
+		this.pos = po;
+	}
+	
+	public void setOffsetX(int off){
+		this.offsetX = off;
+	}
+	
+	public int getOffsetX(){
+		return this.offsetX;
+	}
+	
+	public int getPos(){
+		return pos;
+	}
 
-public class Level{
+	public int getMoney(){
+		return money;
+	}
 	
-	private int len, diff, backg;
-	public int score;
-	private boolean complete;
-	public boolean failed, won;
+	public int getLength(){
+		return this.length;
+	}
 	
-	
-	
-	public Level(int leng, int diffi, int backgr){
-		this.len = leng;
-		this.diff = diffi;
-		this.backg = backgr;
-		this.complete = false;
+	public int getDiff(){
+		return this.diff;
 	}
 	
 	
-
-
 }
